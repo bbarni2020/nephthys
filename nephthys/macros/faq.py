@@ -21,7 +21,7 @@ class FAQ(Macro):
             or user_info["user"]["name"]
         )
         await reply_to_ticket(
-            text=f"hey, {name}! this question is answered in the faq i sent earlier, please make sure to check it out! :rac_cute:\n\n<{env.transcript.faq_link}|here it is again>",
+            text=f"that's in the FAQ, {name}. Read it here — <{env.transcript.faq_link}|FAQ>",
             ticket=ticket,
             client=env.slack_client,
         )

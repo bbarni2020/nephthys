@@ -21,7 +21,7 @@ class Fraud(Macro):
             or user_info["user"]["name"]
         )
         await reply_to_ticket(
-            text=f"Hiya {name}! Would you mind directing any fraud related queries to <@U091HC53CE8>? :rac_cute:\n\nIt'll keep your case confidential and make it easier for the fraud team to keep track of!",
+            text=f"Oi {name} — got a fraud issue? Send it straight to <@U091HC53CE8>. I’ll keep the theatrics, they’ll handle the rest. Keeps things confidential and on the fraud team’s radar.",
             ticket=ticket,
             client=env.slack_client,
         )

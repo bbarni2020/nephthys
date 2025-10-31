@@ -12,7 +12,7 @@ class Transcript(BaseModel):
         extra = "forbid"
 
     program_name: str = Field(
-        default="Summer of Making", description="Name of the program"
+        default="Construct", description="Name of the program"
     )
     program_owner: str = Field(
         default="U054VC2KM9P",
@@ -41,7 +41,7 @@ class Transcript(BaseModel):
         return self.program_name.lower().replace(" ", "_")
 
     faq_link: str = Field(
-        default="https://hackclub.slack.com/docs/T0266FRGM/F093F8D7EE9",
+        default="https://hackclub.slack.com/docs/T0266FRGM/F09Q2DS061J",
         description="FAQ link URL",
     )
 
@@ -69,11 +69,11 @@ class Transcript(BaseModel):
     )
 
     thread_broadcast_delete: str = Field(
-        default="hey! please keep your messages *all in one thread* to make it easier to read! i've gone ahead and removed that message from the channel for ya :D",
+        default="heads up — please keep messages in a single thread so context stays intact. i've removed the duplicate message to keep the channel tidy.",
     )
 
     home_unknown_user_title: str = Field(
-        default=":upside-down_orpheus: woah, stop right there {name}!",
+        default=":gear: hold up, {name} — access restricted!",
         description="Title for unknown user on home page",
     )
 
@@ -87,7 +87,7 @@ class Transcript(BaseModel):
 
     # this stuff is only required for summer of making, but it's easier to keep it here :p
     dm_magic_link_no_user: str = Field(
-        default=":rac_cute: heya, please provide the user you want me to dm",
+        default="please provide the user (username or ID) you want me to DM",
         description="Message when no user provided for magic link DM",
     )
 
@@ -96,12 +96,12 @@ class Transcript(BaseModel):
     )
 
     dm_magic_link_success: str = Field(
-        default=":rac_cute: magic link sent! tell em to check their dms with me :D",
+        default="magic link sent — tell them to check their DMs.",
         description="Success message for magic link DM",
     )
 
     dm_magic_link_message: str = Field(
-        default=":rac_cute: hey there! i got told that you got a bit stuck so here's a magic link for ya :D\n{magic_link}",
+        default="got stuck? here’s a quick link to get you back on track:\n{magic_link}",
         description="Magic link DM message",
     )
 
@@ -113,35 +113,35 @@ class Transcript(BaseModel):
     def set_default_messages(self):
         """Set default values for messages that reference other fields"""
         if not self.first_ticket_create:
-            self.first_ticket_create = f"""oh, hey (user) it looks like this is your first time here, welcome! someone should be along to help you soon but in the mean time i suggest you read the faq <{self.faq_link}|here>, it answers a lot of common questions.
-if your question has been answered, please hit the button below to mark it as resolved
+            self.first_ticket_create = f"""hey — looks like this is your first post. welcome! someone will be by soon. meantime, check the FAQ <{self.faq_link}|here> to see if your question's already answered.
+if your issue is resolved, please tap the button below to mark it resolved.
     """
 
         if not self.ticket_create:
-            self.ticket_create = f"""someone should be along to help you soon but in the mean time i suggest you read the faq <{self.faq_link}|here> to make sure your question hasn't already been answered. if it has been, please hit the button below to mark it as resolved :D
+            self.ticket_create = f"""someone will be along to help soon. meanwhile, please consult the FAQ <{self.faq_link}|here> to check for an existing answer. if your question's already resolved, tap the resolve button below.
     """
 
         if not self.ticket_resolve:
-            self.ticket_resolve = f"""oh, oh! it looks like this post has been marked as resolved by <@{{user_id}}>! if you have any more questions, please make a new post in <#{self.help_channel}> and someone'll be happy to help you out! not me though, i'm just a silly racoon ^-^
+            self.ticket_resolve = f"""this post was marked resolved by <@{{user_id}}>. if you need further help, please open a new post in <#{self.help_channel}> and the team will assist. i've taken care of the status update.
     """
 
         if not self.ticket_resolve_stale:
-            self.ticket_resolve_stale = f""":rac_nooo: it looks like this post is a bit old! if you still need help, please make a new post in <#{self.help_channel}> and someone'll be happy to help you out! ^~^
+            self.ticket_resolve_stale = f"""this thread looks stale. if you still need support, please open a new post in <#{self.help_channel}> and someone will help you.
         """
 
         if not self.home_unknown_user_text:
-            self.home_unknown_user_text = f"heyyyy, heidi here! it looks like i'm not allowed to show ya this. sorry! if you think this is a mistake, please reach out to <@{self.program_owner}> and she'll lmk what to do!"
+            self.home_unknown_user_text = f"can't show that here — you don't have permission. if you think this is wrong, contact <@{self.program_owner}> to sort access."
 
         if not self.not_allowed_channel:
-            self.not_allowed_channel = f"heya, it looks like you're not supposed to be in that channel, pls talk to <@{self.program_owner}> if that's wrong"
+            self.not_allowed_channel = f"that action isn't allowed in this channel. please contact <@{self.program_owner}> if you need access."
 
         if not self.dm_magic_link_error:
-            self.dm_magic_link_error = f":rac_nooo: something went wrong while generating the magic link, please bug <@{self.program_owner}> (status: {{status}})"
+            self.dm_magic_link_error = f"failed to generate magic link (status: {{status}}). please contact <@{self.program_owner}>."
 
         if not self.dm_magic_link_no_permission:
-            self.dm_magic_link_no_permission = f":rac_nooo: you don't have permission to use this command, please bug <@{self.program_owner}> if you think this is a mistake"
+            self.dm_magic_link_no_permission = f"you don't have permission to use that command. if this seems wrong, contact <@{self.program_owner}>."
 
         if not self.ticket_reopen:
-            self.ticket_reopen = "hey hey! it looks like <@{helper_slack_id}> has reopened this post! someone'll be with you shortly, ty!"
+            self.ticket_reopen = "update: <@{helper_slack_id}> reopened this post. someone will be with you shortly."
 
         return self

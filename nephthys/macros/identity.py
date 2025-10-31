@@ -21,7 +21,7 @@ class Identity(Macro):
             or user_info["user"]["name"]
         )
         await reply_to_ticket(
-            text=f"hey, {name}! please could you ask questions about identity verification in <#{env.transcript.identity_help_channel}>? :rac_cute:\n\nit helps the verification team keep track of questions easier!",
+            text=f"Hello {name}. Please post identity-verification questions in <#{env.transcript.identity_help_channel}> so the verification team can track and handle them efficiently.",
             ticket=ticket,
             client=env.slack_client,
         )
