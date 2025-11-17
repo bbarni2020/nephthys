@@ -270,8 +270,13 @@ async def on_message(event: Dict[str, Any], client: AsyncWebClient):
 
 async def generate_ticket_title(text: str):
     async with env.session.post(
-        "https://ai.hackclub.com/chat/completions",
+        "https://ai.hackclub.com/proxy/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {env.site_api_key}",
+            "Content-Type": "application/json",
+        },
         json={
+            "model": "deepseek/deepseek-r1-0528",
             "messages": [
                 {
                     "role": "system",
