@@ -1,7 +1,7 @@
 from nephthys.transcripts.transcript import Transcript
 
 
-class Flavortown(Transcript):
+class Construct(Transcript):
     """Transcript for Hack Club Construct"""
 
     program_name: str = "Construct"
