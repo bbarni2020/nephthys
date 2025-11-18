@@ -21,6 +21,7 @@ from nephthys.events.message import on_message
 from nephthys.events.message_deletion import on_message_deletion
 from nephthys.options.tags import get_tags
 from nephthys.utils.env import env
+from nephthys.utils.logging import send_heartbeat
 
 app = AsyncApp(token=env.slack_bot_token, signing_secret=env.slack_signing_secret)
 
@@ -50,7 +51,11 @@ async def handle_mark_resolved_button(
     await ack()
     value = body["actions"][0]["value"]
     resolver = body["user"]["id"]
-    await resolve(value, resolver, client)
+    try:
+        await resolve(value, resolver, client)
+    except Exception as e:
+        logging.error(f"Error resolving ticket: {e}")
+        await send_heartbeat(f"Error resolving ticket {value} by {resolver}: {e}")
 
 
 @app.options("tag-list")
