@@ -9,23 +9,18 @@ from nephthys.views.home.components.ticket_status_pie import get_ticket_status_p
 from prisma.enums import TicketStatus
 
 
-async def send_daily_stats():
-    """
-    Calculates and sends statistics for the previous day to a Slack channel.
-    This task is intended to be run at midnight.
-    """
+async def send_weekly_stats():
     london_tz = ZoneInfo("Europe/London")
     now_london = datetime.now(london_tz)
     today_midnight_london = now_london.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
 
-    # this gives us the 24-hour period of the previous day
-    start_of_yesterday = today_midnight_london - timedelta(days=1)
-    end_of_yesterday = today_midnight_london
+    start_of_last_week = today_midnight_london - timedelta(days=7)
+    end_of_last_week = today_midnight_london
 
     logging.info(
-        f"Generating daily stats for the period: {start_of_yesterday} to {end_of_yesterday}"
+        f"Generating weekly stats for the period: {start_of_last_week} to {end_of_last_week}"
     )
 
     try:
@@ -55,73 +50,73 @@ async def send_daily_stats():
         else:
             overall_leaderboard_str = "\n".join(overall_leaderboard_lines)
 
-        prev_day_total = len(
-            [t for t in tickets if start_of_yesterday <= t.createdAt < end_of_yesterday]
+        prev_week_total = len(
+            [t for t in tickets if start_of_last_week <= t.createdAt < end_of_last_week]
         )
-        prev_day_only_closed = len(
+        prev_week_only_closed = len(
             [
                 t
                 for t in tickets
                 if t.status == TicketStatus.CLOSED
                 and t.closedAt
-                and start_of_yesterday <= t.closedAt < end_of_yesterday
-                and start_of_yesterday <= t.createdAt < end_of_yesterday
+                and start_of_last_week <= t.closedAt < end_of_last_week
+                and start_of_last_week <= t.createdAt < end_of_last_week
             ]
         )
-        prev_day_open = len(
+        prev_week_open = len(
             [
                 t
                 for t in tickets
-                if start_of_yesterday <= t.createdAt < end_of_yesterday
+                if start_of_last_week <= t.createdAt < end_of_last_week
                 and t.status == TicketStatus.OPEN
             ]
         )
-        prev_day_in_progress = len(
+        prev_week_in_progress = len(
             [
                 t
                 for t in tickets
                 if t.assignedAt
-                and start_of_yesterday <= t.assignedAt < end_of_yesterday
+                and start_of_last_week <= t.assignedAt < end_of_last_week
                 and t.status == TicketStatus.IN_PROGRESS
             ]
         )
-        prev_day_closed = len(
+        prev_week_closed = len(
             [
                 t
                 for t in tickets
                 if t.status == TicketStatus.CLOSED
                 and t.closedAt
-                and start_of_yesterday <= t.closedAt < end_of_yesterday
+                and start_of_last_week <= t.closedAt < end_of_last_week
             ]
         )
 
-        daily_leaderboard_data = []
+        weekly_leaderboard_data = []
         for user in users_with_closed_tickets:
-            daily_closed_count = sum(
+            weekly_closed_count = sum(
                 1
                 for ticket in (user.closedTickets or [])
                 if ticket.closedAt
-                and start_of_yesterday <= ticket.closedAt < end_of_yesterday
+                and start_of_last_week <= ticket.closedAt < end_of_last_week
             )
-            if daily_closed_count > 0:
-                daily_leaderboard_data.append(
-                    {"user": user, "count": daily_closed_count}
+            if weekly_closed_count > 0:
+                weekly_leaderboard_data.append(
+                    {"user": user, "count": weekly_closed_count}
                 )
 
-        sorted_daily_users = sorted(
-            daily_leaderboard_data,
+        sorted_weekly_users = sorted(
+            weekly_leaderboard_data,
             key=lambda data: data["count"],
             reverse=True,
         )
 
-        daily_leaderboard_lines = [
+        weekly_leaderboard_lines = [
             f"{i + 1}. <@{data['user'].slackId}> - {data['count']} closed tickets"
-            for i, data in enumerate(sorted_daily_users[:3])
+            for i, data in enumerate(sorted_weekly_users[:3])
         ]
-        if not daily_leaderboard_lines:
-            daily_leaderboard_str = "_No tickets were closed yesterday!_"
+        if not weekly_leaderboard_lines:
+            weekly_leaderboard_str = "_No tickets were closed last week!_"
         else:
-            daily_leaderboard_str = "\n".join(daily_leaderboard_lines)
+            weekly_leaderboard_str = "\n".join(weekly_leaderboard_lines)
 
         pie_chart = await get_ticket_status_pie_chart(raw=True)
 
@@ -139,13 +134,13 @@ tickets closed: *{total_closed}*
 *:rac_lfg: overall leaderboard*
 {overall_leaderboard_str}
 
-*:mc-clock: in the last 24 hours...* _(that's a day, right? right? that's a day, yeah ok)_
-:rac_woah: *{prev_day_total}* total tickets were opened and you managed to close *{prev_day_only_closed}* of them! congrats!! :D
-:rac_info: *{prev_day_in_progress}* tickets have been assigned to users, and *{prev_day_open}* are still open
-you managed to close a whopping *{prev_day_closed}* tickets in the last 24 hours, well done!
+*:mc-clock: in the last 7 days...* _(that's a week, right? right? that's a week, yeah ok)_
+:rac_woah: *{prev_week_total}* total tickets were opened and you managed to close *{prev_week_only_closed}* of them! congrats!! :D
+:rac_info: *{prev_week_in_progress}* tickets have been assigned to users, and *{prev_week_open}* are still open
+you managed to close a whopping *{prev_week_closed}* tickets in the last 7 days, well done!
 
-*:rac_shy: today's leaderboard*
-{daily_leaderboard_str}
+*:rac_shy: this week's leaderboard*
+{weekly_leaderboard_str}
 """
 
         await env.slack_client.files_upload_v2(
@@ -155,13 +150,13 @@ you managed to close a whopping *{prev_day_closed}* tickets in the last 24 hours
             initial_comment=msg,
         )
 
-        logging.info("Daily stats message sent successfully.")
+        logging.info("Weekly stats message sent successfully.")
 
     except Exception as e:
-        logging.error(f"Failed to send daily stats: {e}", exc_info=True)
+        logging.error(f"Failed to send weekly stats: {e}", exc_info=True)
         try:
             await send_heartbeat(
-                "Failed to send daily stats",
+                "Failed to send weekly stats",
                 messages=[str(e)],
             )
         except Exception as slack_e:

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from starlette.applications import Starlette
 
 from nephthys.tasks.close_stale import close_stale_tickets
-from nephthys.tasks.daily_stats import send_daily_stats
+from nephthys.tasks.weekly_stats import send_weekly_stats
 from nephthys.tasks.update_helpers import update_helpers
 from nephthys.utils.delete_thread import process_queue
 from nephthys.utils.env import env
@@ -36,8 +36,8 @@ async def main(_app: Starlette):
         await env.db.connect()
 
         scheduler = AsyncIOScheduler(timezone="Europe/London")
-        if env.daily_summary:
-            scheduler.add_job(send_daily_stats, "cron", hour=0, minute=0)
+        if env.weekly_summary:
+            scheduler.add_job(send_weekly_stats, "cron", day_of_week=0, hour=0, minute=0)
         scheduler.add_job(
             close_stale_tickets,
             "interval",

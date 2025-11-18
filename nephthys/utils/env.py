@@ -30,7 +30,7 @@ class Environment:
         self.slack_user_group = os.environ.get("SLACK_USER_GROUP", "unset")
         self.slack_maintainer_id = os.environ.get("SLACK_MAINTAINER_ID", "unset")
         self.program = os.environ.get("PROGRAM", "summer_of_making")
-        self.daily_summary = True if not os.environ.get("DAILY_SUMMARY") else False
+        self.weekly_summary = True if not os.environ.get("WEEKLY_SUMMARY") else False
         self.app_title = os.environ.get("APP_TITLE", "helper heidi")
 
         self.port = int(os.environ.get("PORT", 3000))
