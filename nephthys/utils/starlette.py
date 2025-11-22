@@ -62,7 +62,10 @@ async def project(req: Request):
     except:
         user_name = "there"
     message = f"Hey {user_name}! Your project has been shipped on Construct! Check it out: {project_url} Yepee! 🎉"
-    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    try:
+        await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to send DM: {str(e)}"}, status_code=500)
     return JSONResponse({"message": "Project endpoint", "slack-id": slack_id, "project-url": project_url})
 
 
@@ -84,7 +87,10 @@ async def shop(req: Request):
         message = f"Congrats {user_name}! Your {item} has been approved on Construct! 🎉"
     else:
         message = f"Sorry {user_name}, your {item} request was not approved this time."
-    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    try:
+        await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to send DM: {str(e)}"}, status_code=500)
     return JSONResponse({"message": "Shop endpoint", "slack-id": slack_id, "approved": approved, "item": item})
 
 
@@ -112,7 +118,10 @@ async def review(req: Request):
         message = f"Hey {user_name}, your project review is pending on Construct. Reason: {reason}"
     else:
         message = f"Hey {user_name}, your project review status: {status}. Reason: {reason}"
-    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    try:
+        await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to send DM: {str(e)}"}, status_code=500)
     return JSONResponse({"message": "Review endpoint", "slack-id": slack_id, "project-url": project_url, "status": status, "reason": reason})
 
 
