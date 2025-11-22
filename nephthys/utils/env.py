@@ -37,6 +37,8 @@ class Environment:
 
         self.slack_heartbeat_channel = os.environ.get("SLACK_HEARTBEAT_CHANNEL")
 
+        self.auth_key = os.environ.get("AUTH_KEY", "unset")
+
         unset = [key for key, value in self.__dict__.items() if value == "unset"]
 
         if unset:

@@ -48,8 +48,76 @@ async def metrics(req: Request):
     return Response(all_metrics, media_type=CONTENT_TYPE_LATEST)
 
 
+async def project(req: Request):
+    auth = req.query_params.get("authorization")
+    if auth != env.auth_key:
+        return JSONResponse({"error": "invalid authorization"}, status_code=401)
+    slack_id = req.query_params.get("slack-id")
+    project_url = req.query_params.get("project-url")
+    if not slack_id or not project_url:
+        return JSONResponse({"error": "slack-id and project-url required"}, status_code=400)
+    try:
+        user_info = await env.slack_client.users_info(user=slack_id)
+        user_name = user_info["user"].get("real_name") or user_info["user"]["name"]
+    except:
+        user_name = "there"
+    message = f"Hey {user_name}! Your project has been shipped on Construct! Check it out: {project_url} Yepee! 🎉"
+    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    return JSONResponse({"message": "Project endpoint", "slack-id": slack_id, "project-url": project_url})
+
+
+async def shop(req: Request):
+    auth = req.query_params.get("authorization")
+    if auth != env.auth_key:
+        return JSONResponse({"error": "invalid authorization"}, status_code=401)
+    slack_id = req.query_params.get("slack-id")
+    approved = req.query_params.get("approved")
+    item = req.query_params.get("item")
+    if not slack_id or approved is None or not item:
+        return JSONResponse({"error": "slack-id, approved, and item required"}, status_code=400)
+    try:
+        user_info = await env.slack_client.users_info(user=slack_id)
+        user_name = user_info["user"].get("real_name") or user_info["user"]["name"]
+    except:
+        user_name = "there"
+    if approved.lower() == "true":
+        message = f"Congrats {user_name}! Your {item} has been approved on Construct! 🎉"
+    else:
+        message = f"Sorry {user_name}, your {item} request was not approved this time."
+    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    return JSONResponse({"message": "Shop endpoint", "slack-id": slack_id, "approved": approved, "item": item})
+
+
+async def review(req: Request):
+    auth = req.query_params.get("authorization")
+    if auth != env.auth_key:
+        return JSONResponse({"error": "invalid authorization"}, status_code=401)
+    slack_id = req.query_params.get("slack-id")
+    project_url = req.query_params.get("project-url")
+    status = req.query_params.get("status")
+    reason = req.query_params.get("reason")
+    if not slack_id or not project_url or not status or not reason:
+        return JSONResponse({"error": "slack-id, project-url, status, and reason required"}, status_code=400)
+    try:
+        user_info = await env.slack_client.users_info(user=slack_id)
+        user_name = user_info["user"].get("real_name") or user_info["user"]["name"]
+    except:
+        user_name = "there"
+    status_lower = status.lower()
+    if status_lower == "approved":
+        message = f"Great news {user_name}! Your project review is approved on Construct! Check it out: {project_url} Reason: {reason} 🎉"
+    elif status_lower == "rejected":
+        message = f"Sorry {user_name}, your project review was rejected on Construct. Reason: {reason}"
+    elif status_lower == "pending":
+        message = f"Hey {user_name}, your project review is pending on Construct. Reason: {reason}"
+    else:
+        message = f"Hey {user_name}, your project review status: {status}. Reason: {reason}"
+    await env.slack_client.chat_postMessage(channel=slack_id, text=message)
+    return JSONResponse({"message": "Review endpoint", "slack-id": slack_id, "project-url": project_url, "status": status, "reason": reason})
+
+
 async def root(req: Request):
-    return RedirectResponse(url="https://github.com/hackclub/nephthys")
+    return RedirectResponse(url="https://construct.hackclub.com")
 
 
 app = Starlette(
@@ -61,6 +129,9 @@ app = Starlette(
         Route(path="/api/user", endpoint=user_stats, methods=["GET"]),
         Route(path="/health", endpoint=health, methods=["GET"]),
         Route(path="/metrics", endpoint=metrics, methods=["GET"]),
+        Route(path="/project", endpoint=project, methods=["GET"]),
+        Route(path="/shop", endpoint=shop, methods=["GET"]),
+        Route(path="/review", endpoint=review, methods=["GET"]),
     ],
     lifespan=main,
 )
