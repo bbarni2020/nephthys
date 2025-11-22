@@ -116,6 +116,8 @@ async def review(req: Request):
         message = f"Sorry {user_name}, your project review was rejected on Construct. Reason: {reason}"
     elif status_lower == "pending":
         message = f"Hey {user_name}, your project review is pending on Construct. Reason: {reason}"
+    elif status_lower == "hour_deduction":
+        message = f"Hey {user_name}, your hours have been deducted on Construct. Reason: {reason}"
     else:
         message = f"Hey {user_name}, your project review status: {status}. Reason: {reason}"
     try:
